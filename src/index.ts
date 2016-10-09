@@ -50,7 +50,7 @@ function directoryHandler (path: string, res: ServerResponse) {
 }
 
 const server = createServer((req: IncomingMessage, res: ServerResponse) => {
-  const path = `.${req.url}`;
+  const path = join('.', req.url);
   lstat(path, (err, stats) => {
     if (err) {
       return notFoundHandler(res);
