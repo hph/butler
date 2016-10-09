@@ -1,0 +1,29 @@
+{
+  "name": "butler-server",
+  "version": "0.1.0",
+  "description": "Serve files from any directory",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hph/butler.git"
+  },
+  "keywords": [
+    "server", "static", "http", "files"
+  ],
+  "main": "dist/index.js",
+  "author": "Haukur Páll Hallvarðsson",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc --outDir ./dist ./src/index.ts && cp ./src/index.ejs ./dist",
+    "start": "node ./dist/index.js"
+  },
+  "bin": {
+    "butler": "bin/butler"
+  },
+  "dependencies": {
+    "ejs": "^2.5.2"
+  },
+  "devDependencies": {
+    "@types/ejs": "^2.3.31",
+    "@types/node": "^6.0.45"
+  }
+}
