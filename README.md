@@ -6,7 +6,7 @@
 
 From within any directory, simply run `butler`:
 
-  butler
+    butler
 
 And a server will be launched on port `localhost:8080`.
 
@@ -14,4 +14,4 @@ And a server will be launched on port `localhost:8080`.
 
 You must install `butler` globally:
 
-  npm install -g butler-server
+    npm install -g butler-server
