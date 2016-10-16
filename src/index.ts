@@ -1,75 +1,22 @@
-import { createServer, IncomingMessage, ServerResponse } from 'http';
-import { readdir, readFile, readFileSync, lstat } from 'fs';
-import { join, resolve } from 'path';
+import { argv } from 'yargs';
+import { connect } from 'ngrok';
 
-import { compile } from 'ejs';
-import { contentType } from 'mime-types';
-import { map, promisify } from 'bluebird';
+import server from './server';
 
-const readdirAsync = promisify(readdir);
-const readFileAsync = promisify(readFile);
-const lstatAsync = promisify(lstat);
+function main () {
+  const port = argv.port || 8080;
 
-const template = compile(readFileSync(join(__dirname, 'template.ejs'), 'utf-8'));
-
-interface DirContents {
-  directories: Array<string>,
-  files: Array<string>,
-}
-
-async function listContents (path: string): Promise<DirContents> {
-  const directories = [];
-  const files = [];
-
-  const fullPath = resolve(path);
-  const contents = await readdirAsync(fullPath);
-
-  await map(contents, async (file: string) => {
-    const stats = await lstatAsync(join(fullPath, file));
-    if (stats.isFile()) {
-      files.push(join(path, file));
-    } else {
-      directories.push(join(path, file));
-    }
+  server.listen(port, () => {
+    console.log(`Serving at http://localhost:${port}`);
   });
 
-  return { directories, files };
-}
-
-function notFoundHandler (res: ServerResponse) {
-  res.writeHead(404, { 'Content-Type': 'text/plain' });
-  res.end('404 - File not found');
-}
-
-function internalErrorHandler (res: ServerResponse) {
-  res.writeHead(500, { 'Content-Type': 'text/plain' });
-  res.end('500 - Internal Server Error');
-}
-
-async function fileHandler (res: ServerResponse, path: string) {
-  res.writeHead(200, { 'Content-Type': contentType(path) || 'text/plain' });
-  res.end(await readFileAsync(path));
-}
-
-async function directoryHandler (res: ServerResponse, path: string) {
-  const { directories, files } = await listContents(path);
-  res.end(template({ directories, files, path }));
-}
-
-async function requestHandler (req: IncomingMessage, res: ServerResponse): Promise<void> {
-  const path = join('.', decodeURI(req.url));
-  try {
-    const stats = await lstatAsync(path);
-    if (stats.isFile()) {
-      fileHandler(res, path);
-    } else if (stats.isDirectory()) {
-      directoryHandler(res, path);
-    } else {
-      internalErrorHandler(res);
-    }
-  } catch (err) {
-    notFoundHandler(res);
+  if (argv.ngrok) {
+    connect(port, (err, address) => {
+      console.log(`Proxying at ${address}`);
+    });
   }
 }
 
-export default createServer(requestHandler);
+if (require.main === module) {
+  main();
+}

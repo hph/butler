@@ -1,6 +1,6 @@
 {
   "name": "butler-server",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Serve files from any directory",
   "repository": {
     "type": "git",
@@ -22,15 +22,18 @@
     "postinstall": "npm run build"
   },
   "bin": {
-    "butler": "bin/butler"
+    "butler": "node dist/index.js"
   },
   "dependencies": {
     "@types/bluebird": "^3.0.35",
     "@types/ejs": "^2.3.32",
     "@types/node": "^6.0.45",
+    "@types/yargs": "0.0.33",
     "bluebird": "^3.4.6",
     "ejs": "^2.5.2",
     "mime-types": "^2.1.12",
-    "typescript": "^2.1.0-dev.20161009"
+    "ngrok": "^2.2.3",
+    "typescript": "^2.1.0-dev.20161009",
+    "yargs": "^6.1.1"
   }
 }
