@@ -57,7 +57,7 @@ async function directoryHandler (res: ServerResponse, path: string) {
 }
 
 async function requestHandler (req: IncomingMessage, res: ServerResponse): Promise<void> {
-  const path = join('.', req.url);
+  const path = join('.', decodeURI(req.url));
   try {
     const stats = await lstatAsync(path);
     if (stats.isFile()) {
