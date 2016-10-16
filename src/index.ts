@@ -1,23 +1,31 @@
 import { createServer, IncomingMessage, ServerResponse } from 'http';
-import { readdirSync, readFileSync, lstat, lstatSync } from 'fs';
+import { readdir, readFile, readFileSync, lstat } from 'fs';
 import { join, resolve } from 'path';
 
-import { compile } from 'ejs'
+import { compile } from 'ejs';
+import { map, promisify } from 'bluebird';
 
+const readdirAsync = promisify(readdir);
+const readFileAsync = promisify(readFile);
+const lstatAsync = promisify(lstat);
+
+const template = compile(readFileSync(join(__dirname, 'index.ejs'), 'utf-8'));
 
 interface DirContents {
   directories: Array<string>,
   files: Array<string>,
 }
 
-function listContents (path: string): DirContents {
+async function listContents (path: string): Promise<DirContents> {
   const directories = [];
   const files = [];
 
-  const context = resolve(path);
-  readdirSync(context).forEach(file => {
-    const withContext = join(context, file);
-    if (lstatSync(withContext).isFile()) {
+  const fullPath = resolve(path);
+  const contents = await readdirAsync(fullPath);
+
+  await map(contents, async (file: string) => {
+    const stats = await lstatAsync(join(fullPath, file));
+    if (stats.isFile()) {
       files.push(join(path, file));
     } else {
       directories.push(join(path, file));
@@ -26,8 +34,6 @@ function listContents (path: string): DirContents {
 
   return { directories, files };
 }
-
-const template = compile(readFileSync(join(__dirname, 'index.ejs'), 'utf-8'));
 
 function notFoundHandler (res: ServerResponse) {
   res.writeHead(404, { 'Content-Type': 'text/plain' });
@@ -39,30 +45,30 @@ function internalErrorHandler (res: ServerResponse) {
   res.end('500 - Internal Server Error');
 }
 
-function fileHandler (path: string, res: ServerResponse) {
-  res.writeHead(200, {'Content-Type': 'text/plain'});
-  res.end(readFileSync(path, 'utf-8'));
+async function fileHandler (res: ServerResponse, path: string) {
+  res.writeHead(200, { 'Content-Type': 'text/plain' });
+  res.end(await readFileAsync(path));
 }
 
-function directoryHandler (path: string, res: ServerResponse) {
-  const { files, directories } = listContents(path);
+async function directoryHandler (res: ServerResponse, path: string) {
+  const { directories, files } = await listContents(path);
   res.end(template({ directories, files, path }));
 }
 
-const server = createServer((req: IncomingMessage, res: ServerResponse) => {
+async function requestHandler (req: IncomingMessage, res: ServerResponse): Promise<void> {
   const path = join('.', req.url);
-  lstat(path, (err, stats) => {
-    if (err) {
-      return notFoundHandler(res);
-    }
+  try {
+    const stats = await lstatAsync(path);
     if (stats.isFile()) {
-      fileHandler(path, res);
+      fileHandler(res, path);
     } else if (stats.isDirectory()) {
-      directoryHandler(path, res);
+      directoryHandler(res, path);
     } else {
       internalErrorHandler(res);
     }
-  });
-});
+  } catch (err) {
+    notFoundHandler(res);
+  }
+}
 
-export default server;
+export default createServer(requestHandler);
