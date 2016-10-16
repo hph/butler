@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import { argv } from 'yargs';
 import { connect } from 'ngrok';
 

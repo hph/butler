@@ -1,6 +1,6 @@
 {
   "name": "butler-server",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Serve files from any directory",
   "repository": {
     "type": "git",
@@ -22,7 +22,7 @@
     "postinstall": "npm run build"
   },
   "bin": {
-    "butler": "node dist/index.js"
+    "butler": "./dist/index.js"
   },
   "dependencies": {
     "@types/bluebird": "^3.0.35",
