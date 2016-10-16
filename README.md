@@ -1,5 +1,8 @@
 # butler
 
+[![Package Version](https://img.shields.io/npm/v/butler-server.svg)](https://www.npmjs.com/package/butler-server)
+[![License](https://img.shields.io/npm/l/butler-server.svg)](https://tldrlegal.com/license/mit-license)
+
 > A static file server written in TypeScript.
 
 ## Usage

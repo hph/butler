@@ -13,8 +13,8 @@ const lstatAsync = promisify(lstat);
 const template = compile(readFileSync(join(__dirname, 'template.ejs'), 'utf-8'));
 
 interface DirContents {
-  directories: Array<string>,
-  files: Array<string>,
+  directories: Array<string>;
+  files: Array<string>;
 }
 
 async function listContents (path: string): Promise<DirContents> {
