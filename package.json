@@ -1,6 +1,6 @@
 {
   "name": "butler-server",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Serve files from any directory",
   "repository": {
     "type": "git",
@@ -17,7 +17,7 @@
   "author": "Haukur Páll Hallvarðsson",
   "license": "MIT",
   "scripts": {
-    "build": "tsc && cp ./src/template.ejs ./dist",
+    "build": "tsc && cp ./src/template.ejs ./dist && chmod +x dist/index.js",
     "start": "node ./dist/index.js",
     "postinstall": "npm run build"
   },
