@@ -8,7 +8,9 @@ From within any directory, simply run `butler`:
 
     butler
 
-And a server will be launched on port `localhost:8080`.
+A server will be launched on port `localhost:8080`, listing all directories and
+files in the current directory. Directories containing an `index.html` file
+will automatically render them instead of listing files.
 
 ## Advanced options
 

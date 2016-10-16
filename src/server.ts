@@ -1,6 +1,6 @@
 import { createServer, IncomingMessage, ServerResponse } from 'http';
 import { readdir, readFile, readFileSync, lstat } from 'fs';
-import { join, resolve } from 'path';
+import { basename, join, resolve } from 'path';
 
 import { compile } from 'ejs';
 import { contentType } from 'mime-types';
@@ -36,6 +36,10 @@ async function listContents (path: string): Promise<DirContents> {
   return { directories, files };
 }
 
+function hasTemplate (files: Array<string>): boolean {
+  return files.some((file: string): boolean => !!file.match(/index.html$/));
+}
+
 function notFoundHandler (res: ServerResponse) {
   res.writeHead(404, { 'Content-Type': 'text/plain' });
   res.end('404 - File not found');
@@ -47,13 +51,17 @@ function internalErrorHandler (res: ServerResponse) {
 }
 
 async function fileHandler (res: ServerResponse, path: string) {
-  res.writeHead(200, { 'Content-Type': contentType(path) || 'text/plain' });
+  res.writeHead(200, { 'Content-Type': contentType(basename(path)) || 'text/plain' });
   res.end(await readFileAsync(path));
 }
 
 async function directoryHandler (res: ServerResponse, path: string) {
   const { directories, files } = await listContents(path);
-  res.end(template({ directories, files, path }));
+  if (hasTemplate(files)) {
+    res.end(await readFileAsync(resolve(path, 'index.html')));
+  } else {
+    res.end(template({ directories, files, path }));
+  }
 }
 
 async function requestHandler (req: IncomingMessage, res: ServerResponse): Promise<void> {
