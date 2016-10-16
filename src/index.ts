@@ -5,7 +5,7 @@ import { connect } from 'ngrok';
 
 import server from './server';
 
-function main () {
+export function main () {
   const port = argv.port || 8080;
 
   server.listen(port, () => {
@@ -17,8 +17,4 @@ function main () {
       console.log(`Proxying at ${address}`);
     });
   }
-}
-
-if (require.main === module) {
-  main();
 }
