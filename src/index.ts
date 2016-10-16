@@ -3,13 +3,14 @@ import { readdir, readFile, readFileSync, lstat } from 'fs';
 import { join, resolve } from 'path';
 
 import { compile } from 'ejs';
+import { contentType } from 'mime-types';
 import { map, promisify } from 'bluebird';
 
 const readdirAsync = promisify(readdir);
 const readFileAsync = promisify(readFile);
 const lstatAsync = promisify(lstat);
 
-const template = compile(readFileSync(join(__dirname, 'index.ejs'), 'utf-8'));
+const template = compile(readFileSync(join(__dirname, 'template.ejs'), 'utf-8'));
 
 interface DirContents {
   directories: Array<string>,
@@ -46,7 +47,7 @@ function internalErrorHandler (res: ServerResponse) {
 }
 
 async function fileHandler (res: ServerResponse, path: string) {
-  res.writeHead(200, { 'Content-Type': 'text/plain' });
+  res.writeHead(200, { 'Content-Type': contentType(path) || 'text/plain' });
   res.end(await readFileAsync(path));
 }
 

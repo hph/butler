@@ -1,6 +1,9 @@
 {
   "compilerOptions": {
     "module": "commonjs",
+    "types": [
+      "node"
+    ],
     "target": "es6",
     "noImplicitAny": false,
     "sourceMap": false,
