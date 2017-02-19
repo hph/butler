@@ -8,6 +8,8 @@ import {
 } from 'fs';
 import { basename, join, resolve } from 'path';
 
+import * as chalk from 'chalk';
+import { format } from 'date-fns';
 import { compile } from 'ejs';
 import { contentType as getContentType } from 'mime-types';
 import { map, promisify } from 'bluebird';
@@ -164,11 +166,31 @@ async function getPathStats (url: string): Promise<PathStats> {
 }
 
 /**
+ * Parse and log the request.
+ */
+function logRequest (req: IncomingMessage): void {
+  const time = format(new Date(), 'DD/MM/YY HH:MM:SS');
+  let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+  if (ip.startsWith('::ffff:')) {
+    ip = ip.substr(7);
+  }
+  console.log(
+    chalk.white(ip),
+    chalk.red('@'),
+    chalk.white(time),
+    chalk.red('>'),
+    `${chalk.white(req.headers.host)}${chalk.blue(req.url)}`,
+  );
+}
+
+/**
  * Handle server requests by delegating to other functions that examine
  * the URL and then serve a response for files, folders, symbolic links or
  * errors as appropriate.
  */
 async function requestHandler (req: IncomingMessage, res: ServerResponse): Promise<void> {
+  logRequest(req);
+
   const { path, stats, error } = await getPathStats(req.url);
   if (error) {
     return error.code === 'ENOENT' && notFoundHandler(res) || internalErrorHandler(res);
@@ -189,4 +211,5 @@ export default function createButlerServer (options: ButlerOptions, callback: Fu
     opts = options;
   }
   createServer(requestHandler).listen(options.port);
+  callback();
 }

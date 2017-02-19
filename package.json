@@ -1,6 +1,6 @@
 {
   "name": "butler-server",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "Serve files from any directory",
   "repository": {
     "type": "git",
@@ -16,7 +16,6 @@
   ],
   "main": "dist/index.js",
   "author": "Haukur Páll Hallvarðsson <hph@hph.is>",
-  "license": "MIT",
   "scripts": {
     "build": "tsc && cp ./src/template.ejs ./dist",
     "start": "bin/butler",
@@ -27,10 +26,13 @@
   },
   "dependencies": {
     "@types/bluebird": "^3.0.37",
+    "@types/chalk": "^0.4.31",
     "@types/ejs": "^2.3.33",
     "@types/node": "^7.0.5",
     "@types/yargs": "^6.6.0",
     "bluebird": "^3.4.7",
+    "chalk": "^1.1.3",
+    "date-fns": "^1.27.2",
     "ejs": "^2.5.6",
     "mime-types": "^2.1.14",
     "ngrok": "^2.2.6",

@@ -3,6 +3,8 @@
 import { argv } from 'yargs';
 import { connect } from 'ngrok';
 
+import * as chalk from 'chalk';
+
 import createButlerServer, { ButlerOptions } from './server';
 
 
@@ -32,12 +34,20 @@ export function main () {
   const options: ButlerOptions = { port, directory };
 
   createButlerServer(options, () => {
-    console.log(`Serving at http://localhost:${port}`);
+    console.log(
+      chalk.white('Butler serving'),
+      chalk.red('@'),
+      chalk.white(`http://localhost:${port}`),
+    );
   });
 
   if (argv.ngrok) {
     connect(port, (err, address) => {
-      console.log(`Proxying at ${address}`);
+      console.log(
+        chalk.white('Proxying'),
+        chalk.red('@'),
+        chalk.white(address),
+      );
     });
   }
 }
