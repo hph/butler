@@ -169,7 +169,7 @@ async function getPathStats (url: string): Promise<PathStats> {
  * Parse and log the request.
  */
 function logRequest (req: IncomingMessage): void {
-  const time = format(new Date(), 'DD/MM/YY HH:MM:SS');
+  const time = format(new Date(), 'DD/MM/YY HH:mm:ss');
   let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
   if (ip.startsWith('::ffff:')) {
     ip = ip.substr(7);
