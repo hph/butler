@@ -7,13 +7,15 @@
 
 ## Usage
 
-From within any directory, simply run `butler`:
+From within any directory, simply run `butler` in the terminal:
 
     butler
 
 A server will be launched on port `localhost:8080`, listing all directories and
 files in the current directory. Directories containing an `index.html` file
-will automatically render them instead of listing files.
+will automatically render them instead of listing files. You can also provide a
+directory name as an argument when running `butler` in order to serve files
+from that directory (as opposed to the current working directory).
 
 ## Advanced options
 

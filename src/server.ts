@@ -18,8 +18,15 @@ const readFile = promisify(_readFile);
 const realpath = promisify(_realpath);
 const lstat = promisify(_lstat);
 
+// Configure globals required throughout the module.
+let opts: ButlerOptions;
 const template = compile(readFileSync(join(__dirname, 'template.ejs'), 'utf-8'));
 
+
+export interface ButlerOptions {
+  port: string;
+  directory: string;
+}
 
 interface DirContents {
   directories: Array<string>;
@@ -77,6 +84,25 @@ async function fileHandler (res: ServerResponse, path: string) {
 }
 
 /**
+ * Trim the filename so that it only includes subdirectories of the root
+ * directory as part of the pathname, not the absolute path.
+ * Example: Given a root directory of "/Users/butler/" and the contents being a
+ * single directory "example/" with a file "example.txt", the function should
+ * return "example/example.txt" instead of "/Users/butler/example/example.txt".
+ */
+function getTrimmedFilename (path: string, file: string, rootDirectory: string): string {
+  const name = join(path, file);
+  let trimLength = resolve(opts.directory).length;
+
+  // Handle system root directory ("/") edge case.
+  if (trimLength !== 1) {
+    trimLength += 1;
+  }
+
+  return name.substr(trimLength);
+}
+
+/**
  * Return a list of files and subdirectories at the given path.
  */
 async function listContents (path: string): Promise<DirContents> {
@@ -88,7 +114,7 @@ async function listContents (path: string): Promise<DirContents> {
 
   await map(contents, async (file: string) => {
     const stats = await lstat(join(fullPath, file));
-    const name = join(path, file);
+    const name = getTrimmedFilename(path, file, opts.directory);
     if (stats.isDirectory()) {
       directories.push(name);
     } else {
@@ -118,7 +144,7 @@ async function directoryHandler (res: ServerResponse, path: string) {
  * Return the path, the path stats and any errors encountered.
  */
 async function getPathStats (url: string): Promise<PathStats> {
-  let path = join('.', decodeURI(url));
+  let path = join(resolve(opts.directory), decodeURI(url));
   let stats;
   let error;
 
@@ -157,4 +183,10 @@ async function requestHandler (req: IncomingMessage, res: ServerResponse): Promi
   }
 }
 
-export default createServer(requestHandler);
+
+export default function createButlerServer (options: ButlerOptions, callback: Function): void {
+  if (options) {
+    opts = options;
+  }
+  createServer(requestHandler).listen(options.port);
+}

@@ -3,10 +3,16 @@
 import { argv } from 'yargs';
 import { connect } from 'ngrok';
 
-import server from './server';
+import createButlerServer, { ButlerOptions } from './server';
 
 
 const help = `butler - A static file server written in TypeScript.
+
+Usage:
+
+  butler [directory] [options]
+
+  If no directory is specified, butler defaults to the current working directory.
 
 Options:
 
@@ -21,9 +27,11 @@ export function main () {
     process.exit();
   }
 
-  const port = argv.port || 8080;
+  const port = argv.port || '8080';
+  const directory = argv._.length ? argv._[0] : './';
+  const options: ButlerOptions = { port, directory };
 
-  server.listen(port, () => {
+  createButlerServer(options, () => {
     console.log(`Serving at http://localhost:${port}`);
   });
 
