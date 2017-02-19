@@ -1,4 +1,4 @@
-# butler
+# Butler
 
 [![Package Version](https://img.shields.io/npm/v/butler-server.svg)](https://www.npmjs.com/package/butler-server)
 [![License](https://img.shields.io/npm/l/butler-server.svg)](https://tldrlegal.com/license/mit-license)
@@ -27,5 +27,5 @@ You may provide one or more options when running `butler`.
 
 You must install `butler` globally:
 
-    npm install -g butler-server
+    yarn global add butler-server  # Or npm install -g butler-server
 

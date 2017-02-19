@@ -14,26 +14,26 @@
     "files"
   ],
   "main": "dist/index.js",
-  "author": "Haukur Páll Hallvarðsson",
+  "author": "Haukur Páll Hallvarðsson <hph@hph.is>",
   "license": "MIT",
   "scripts": {
     "build": "tsc && cp ./src/template.ejs ./dist",
-    "start": "node ./dist/index.js",
+    "start": "bin/butler",
     "postinstall": "npm run build"
   },
   "bin": {
     "butler": "bin/butler"
   },
   "dependencies": {
-    "@types/bluebird": "^3.0.35",
-    "@types/ejs": "^2.3.32",
-    "@types/node": "^6.0.45",
-    "@types/yargs": "0.0.33",
-    "bluebird": "^3.4.6",
-    "ejs": "^2.5.2",
-    "mime-types": "^2.1.12",
-    "ngrok": "^2.2.3",
-    "typescript": "^2.1.0-dev.20161009",
-    "yargs": "^6.1.1"
+    "@types/bluebird": "^3.0.37",
+    "@types/ejs": "^2.3.33",
+    "@types/node": "^7.0.5",
+    "@types/yargs": "^6.6.0",
+    "bluebird": "^3.4.7",
+    "ejs": "^2.5.6",
+    "mime-types": "^2.1.14",
+    "ngrok": "^2.2.6",
+    "typescript": "^2.1.6",
+    "yargs": "^6.6.0"
   }
 }
