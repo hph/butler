@@ -1,82 +1,159 @@
 import { createServer, IncomingMessage, ServerResponse } from 'http';
-import { readdir, readFile, readFileSync, lstat } from 'fs';
+import {
+  readFileSync,
+  lstat as _lstat,
+  readFile as _readFile,
+  readdir as _readdir,
+  realpath as _realpath,
+} from 'fs';
 import { basename, join, resolve } from 'path';
 
 import { compile } from 'ejs';
-import { contentType } from 'mime-types';
+import { contentType as getContentType } from 'mime-types';
 import { map, promisify } from 'bluebird';
 
-const readdirAsync = promisify(readdir);
-const readFileAsync = promisify(readFile);
-const lstatAsync = promisify(lstat);
+// Promisify callback-style methods as promises for async/await.
+const readdir = promisify(_readdir);
+const readFile = promisify(_readFile);
+const realpath = promisify(_realpath);
+const lstat = promisify(_lstat);
 
 const template = compile(readFileSync(join(__dirname, 'template.ejs'), 'utf-8'));
+
 
 interface DirContents {
   directories: Array<string>;
   files: Array<string>;
 }
 
+interface ResponseHeaders {
+  'Content-Type': string;
+}
+
+interface FileStats {
+  isFile(): boolean;
+  isDirectory(): boolean;
+  isSymbolicLink(): boolean;
+}
+
+interface ReadError {
+  code: string;
+}
+
+interface PathStats {
+  path: string;
+  stats: FileStats;
+  error?: ReadError;
+}
+
+
+function hasIndexTemplate (files: Array<string>): boolean {
+  return files.some((file: string): boolean => !!file.match(/index.html$/));
+}
+
+function createHeaders (path?: string): ResponseHeaders {
+  const defaultValue = 'text/plain; charset=utf-8';
+  const contentType = path ? (getContentType(basename(path)) || defaultValue) : defaultValue;
+  return { 'Content-Type': contentType };
+}
+
+function notFoundHandler (res: ServerResponse) {
+  res.writeHead(404, createHeaders());
+  res.end('404 - File not found');
+}
+
+function internalErrorHandler (res: ServerResponse) {
+  res.writeHead(500, createHeaders());
+  res.end('500 - Internal Server Error');
+}
+
+/**
+ * Read the file at the provided path and write to the response along
+ * with the appropriate headers.
+ */
+async function fileHandler (res: ServerResponse, path: string) {
+  res.writeHead(200, createHeaders(path));
+  res.end(await readFile(path));
+}
+
+/**
+ * Return a list of files and subdirectories at the given path.
+ */
 async function listContents (path: string): Promise<DirContents> {
   const directories = [];
   const files = [];
 
   const fullPath = resolve(path);
-  const contents = await readdirAsync(fullPath);
+  const contents = await readdir(fullPath);
 
   await map(contents, async (file: string) => {
-    const stats = await lstatAsync(join(fullPath, file));
-    if (stats.isFile()) {
-      files.push(join(path, file));
+    const stats = await lstat(join(fullPath, file));
+    const name = join(path, file);
+    if (stats.isDirectory()) {
+      directories.push(name);
     } else {
-      directories.push(join(path, file));
+      files.push(name);
     }
   });
 
   return { directories, files };
 }
 
-function hasTemplate (files: Array<string>): boolean {
-  return files.some((file: string): boolean => !!file.match(/index.html$/));
-}
-
-function notFoundHandler (res: ServerResponse) {
-  res.writeHead(404, { 'Content-Type': 'text/plain' });
-  res.end('404 - File not found');
-}
-
-function internalErrorHandler (res: ServerResponse) {
-  res.writeHead(500, { 'Content-Type': 'text/plain' });
-  res.end('500 - Internal Server Error');
-}
-
-async function fileHandler (res: ServerResponse, path: string) {
-  res.writeHead(200, { 'Content-Type': contentType(basename(path)) || 'text/plain' });
-  res.end(await readFileAsync(path));
-}
-
+/**
+ * Read the files in the directory at the provided path and write to the
+ * response as appropriate; if there is an index.html file it is served,
+ * otherwise a template listing the files is rendered.
+ */
 async function directoryHandler (res: ServerResponse, path: string) {
   const { directories, files } = await listContents(path);
-  if (hasTemplate(files)) {
-    res.end(await readFileAsync(resolve(path, 'index.html')));
+  if (hasIndexTemplate(files)) {
+    res.end(await readFile(resolve(path, 'index.html')));
   } else {
     res.end(template({ directories, files, path }));
   }
 }
 
-async function requestHandler (req: IncomingMessage, res: ServerResponse): Promise<void> {
-  const path = join('.', decodeURI(req.url));
+/**
+ * Parse the provided URL into a path and read the file there.
+ * Return the path, the path stats and any errors encountered.
+ */
+async function getPathStats (url: string): Promise<PathStats> {
+  let path = join('.', decodeURI(url));
+  let stats;
+  let error;
+
   try {
-    const stats = await lstatAsync(path);
-    if (stats.isFile()) {
-      fileHandler(res, path);
-    } else if (stats.isDirectory()) {
-      directoryHandler(res, path);
-    } else {
-      internalErrorHandler(res);
+    stats = await lstat(path);
+
+    // Follow symbolic link when required.
+    if (stats.isSymbolicLink()) {
+      path = await realpath(path) as string;
+      stats = await lstat(path);
     }
   } catch (err) {
-    notFoundHandler(res);
+    error = err;
+  }
+
+  return { path, stats, error };
+}
+
+/**
+ * Handle server requests by delegating to other functions that examine
+ * the URL and then serve a response for files, folders, symbolic links or
+ * errors as appropriate.
+ */
+async function requestHandler (req: IncomingMessage, res: ServerResponse): Promise<void> {
+  const { path, stats, error } = await getPathStats(req.url);
+  if (error) {
+    return error.code === 'ENOENT' && notFoundHandler(res) || internalErrorHandler(res);
+  }
+
+  if (stats.isFile()) {
+    fileHandler(res, path);
+  } else if (stats.isDirectory()) {
+    directoryHandler(res, path);
+  } else {
+    internalErrorHandler(res);
   }
 }
 

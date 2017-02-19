@@ -5,6 +5,7 @@ import { connect } from 'ngrok';
 
 import server from './server';
 
+
 const help = `butler - A static file server written in TypeScript.
 
 Options:
@@ -12,6 +13,7 @@ Options:
   --port <PORT> Specify the port from which to serve (default: 8080).
   --ngrok       Create a secure tunnel to the local server using ngrok.
 `;
+
 
 export function main () {
   if (argv.h || argv.help) {

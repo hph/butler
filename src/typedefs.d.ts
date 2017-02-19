@@ -3,5 +3,5 @@ declare module 'ngrok' {
 }
 
 declare module 'mime-types' {
-  export function contentType (path: string): string;
+  export function contentType (path: string): string | false;
 }

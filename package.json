@@ -1,6 +1,6 @@
 {
   "name": "butler-server",
-  "version": "0.5.2",
+  "version": "0.6.0",
   "description": "Serve files from any directory",
   "repository": {
     "type": "git",
