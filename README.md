@@ -7,7 +7,7 @@
 
 ## Usage
 
-From within any directory, simply run `butler` in the terminal:
+From within any directory, simply run Butler in the terminal:
 
     butler
 
@@ -27,7 +27,8 @@ You may provide one or more options when running `butler`.
 
 ## Install
 
-You must install `butler` globally:
+You must install Butler globally:
 
     yarn global add butler-server  # Or npm install -g butler-server
 
+Note that the correct NPM package name is `butler-server`, **not** `butler`.
