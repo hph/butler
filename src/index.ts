@@ -18,12 +18,27 @@ Usage:
 
 Options:
 
-  --port <PORT> Specify the port from which to serve (default: 8080).
-  --ngrok       Create a secure tunnel to the local server using ngrok.
+  --port       Specify the port from which to serve (default: 8080).
+  --ngrok      Create a secure tunnel to the local server using ngrok.
+               Please note that the address is publicly accessible and
+               may expose private files.
+  --base-path  Specify the base URL from which to serve (default: /).
+               pecifying a leading and trailing slash is optional but
+               they will be added automatically. In addition, a redirect
+               is set up so that requests to / go to the base path URL.
 `;
 
+function normalizeBasePath (path: string): string {
+  if (!path.startsWith('/')) {
+    path = `/${path}`;
+  }
+  if (!path.endsWith('/')) {
+    path += '/';
+  }
+  return path;
+}
 
-export function main () {
+export function main (): void {
   if (argv.h || argv.help) {
     console.log(help);
     process.exit();
@@ -31,13 +46,14 @@ export function main () {
 
   const port = argv.port || '8080';
   const directory = argv._.length ? argv._[0] : './';
-  const options: ButlerOptions = { port, directory };
+  const basePath = normalizeBasePath(argv.basePath || '');
+  const options: ButlerOptions = { port, directory, basePath };
 
   createButlerServer(options, () => {
     console.log(
       chalk.white('Butler serving'),
       chalk.red('@'),
-      chalk.white(`http://localhost:${port}`),
+      chalk.white(`http://localhost:${port}${basePath}`),
     );
   });
 
@@ -46,7 +62,7 @@ export function main () {
       console.log(
         chalk.white('Proxying'),
         chalk.red('@'),
-        chalk.white(address),
+        chalk.white(`${address}${basePath}`),
       );
     });
   }

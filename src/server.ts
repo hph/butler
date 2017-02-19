@@ -28,6 +28,7 @@ const template = compile(readFileSync(join(__dirname, 'template.ejs'), 'utf-8'))
 export interface ButlerOptions {
   port: string;
   directory: string;
+  basePath: string;
 }
 
 interface DirContents {
@@ -66,14 +67,19 @@ function createHeaders (path?: string): ResponseHeaders {
   return { 'Content-Type': contentType };
 }
 
-function notFoundHandler (res: ServerResponse) {
+function notFoundHandler (res: ServerResponse): void {
   res.writeHead(404, createHeaders());
   res.end('404 - File not found');
 }
 
-function internalErrorHandler (res: ServerResponse) {
+function internalErrorHandler (res: ServerResponse): void {
   res.writeHead(500, createHeaders());
   res.end('500 - Internal Server Error');
+}
+
+function redirectHandler (req: IncomingMessage, res: ServerResponse, redirectUrl: string): void {
+  res.writeHead(302, { Location: redirectUrl });
+  res.end();
 }
 
 /**
@@ -191,7 +197,12 @@ function logRequest (req: IncomingMessage): void {
 async function requestHandler (req: IncomingMessage, res: ServerResponse): Promise<void> {
   logRequest(req);
 
-  const { path, stats, error } = await getPathStats(req.url);
+  if (!req.url.startsWith(opts.basePath)) {
+    return redirectHandler(req, res, `${opts.basePath}${req.url.substr(1)}`);
+  }
+
+  const url = req.url.substr(opts.basePath.length);
+  const { path, stats, error } = await getPathStats(url);
   if (error) {
     return error.code === 'ENOENT' && notFoundHandler(res) || internalErrorHandler(res);
   }
