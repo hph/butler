@@ -5,7 +5,7 @@
       "node"
     ],
     "target": "es6",
-    "noImplicitAny": false,
+    "noImplicitAny": true,
     "sourceMap": false,
     "rootDir": "src",
     "outDir": "dist"

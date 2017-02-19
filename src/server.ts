@@ -80,8 +80,8 @@ async function fileHandler (res: ServerResponse, path: string) {
  * Return a list of files and subdirectories at the given path.
  */
 async function listContents (path: string): Promise<DirContents> {
-  const directories = [];
-  const files = [];
+  const directories: Array<string> = [];
+  const files: Array<string> = [];
 
   const fullPath = resolve(path);
   const contents = await readdir(fullPath);
