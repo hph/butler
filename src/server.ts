@@ -57,27 +57,27 @@ interface PathStats {
 }
 
 
-function hasIndexTemplate (files: Array<string>): boolean {
+export function hasIndexTemplate (files: Array<string>): boolean {
   return files.some((file: string): boolean => !!file.match(/index.html$/));
 }
 
-function createHeaders (path?: string): ResponseHeaders {
+export function createHeaders (path?: string): ResponseHeaders {
   const defaultValue = 'text/plain; charset=utf-8';
   const contentType = path ? (getContentType(basename(path)) || defaultValue) : defaultValue;
   return { 'Content-Type': contentType };
 }
 
-function notFoundHandler (res: ServerResponse): void {
+export function notFoundHandler (res: ServerResponse): void {
   res.writeHead(404, createHeaders());
-  res.end('404 - File not found');
+  res.end('404 - File Not Found');
 }
 
-function internalErrorHandler (res: ServerResponse): void {
+export function internalErrorHandler (res: ServerResponse): void {
   res.writeHead(500, createHeaders());
   res.end('500 - Internal Server Error');
 }
 
-function redirectHandler (req: IncomingMessage, res: ServerResponse, redirectUrl: string): void {
+export function redirectHandler (res: ServerResponse, redirectUrl: string): void {
   res.writeHead(302, { Location: redirectUrl });
   res.end();
 }
@@ -86,7 +86,7 @@ function redirectHandler (req: IncomingMessage, res: ServerResponse, redirectUrl
  * Read the file at the provided path and write to the response along
  * with the appropriate headers.
  */
-async function fileHandler (res: ServerResponse, path: string) {
+export async function fileHandler (res: ServerResponse, path: string) {
   res.writeHead(200, createHeaders(path));
   res.end(await readFile(path));
 }
@@ -98,13 +98,13 @@ async function fileHandler (res: ServerResponse, path: string) {
  * single directory "example/" with a file "example.txt", the function should
  * return "example/example.txt" instead of "/Users/butler/example/example.txt".
  */
-function getTrimmedFilename (path: string, file: string, rootDirectory: string): string {
-  const name = join(path, file);
-  let trimLength = resolve(opts.directory).length;
+export function getTrimmedFilename (path: string, file: string, rootDirectory: string): string {
+  const name = join(resolve(path), file);
+  let trimLength = resolve(rootDirectory).length + 1;
 
-  // Handle system root directory ("/") edge case.
-  if (trimLength !== 1) {
-    trimLength += 1;
+  // Handle edge case for the system root directory ("/").
+  if (trimLength === 2) {
+    trimLength = 1;
   }
 
   return name.substr(trimLength);
@@ -113,7 +113,7 @@ function getTrimmedFilename (path: string, file: string, rootDirectory: string):
 /**
  * Return a list of files and subdirectories at the given path.
  */
-async function listContents (path: string): Promise<DirContents> {
+export async function listContents (path: string): Promise<DirContents> {
   const directories: Array<string> = [];
   const files: Array<string> = [];
 
@@ -138,7 +138,7 @@ async function listContents (path: string): Promise<DirContents> {
  * response as appropriate; if there is an index.html file it is served,
  * otherwise a template listing the files is rendered.
  */
-async function directoryHandler (res: ServerResponse, path: string) {
+export async function directoryHandler (res: ServerResponse, path: string) {
   const { directories, files } = await listContents(path);
   if (hasIndexTemplate(files)) {
     res.end(await readFile(resolve(path, 'index.html')));
@@ -151,7 +151,7 @@ async function directoryHandler (res: ServerResponse, path: string) {
  * Parse the provided URL into a path and read the file there.
  * Return the path, the path stats and any errors encountered.
  */
-async function getPathStats (url: string): Promise<PathStats> {
+export async function getPathStats (url: string): Promise<PathStats> {
   let path = join(resolve(opts.directory), decodeURI(url));
   let stats;
   let error;
@@ -174,7 +174,7 @@ async function getPathStats (url: string): Promise<PathStats> {
 /**
  * Parse and log the request.
  */
-function logRequest (req: IncomingMessage): void {
+export function logRequest (req: IncomingMessage): void {
   const time = format(new Date(), 'DD/MM/YY HH:mm:ss');
   let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
   if (ip.startsWith('::ffff:')) {
@@ -194,11 +194,11 @@ function logRequest (req: IncomingMessage): void {
  * the URL and then serve a response for files, folders, symbolic links or
  * errors as appropriate.
  */
-async function requestHandler (req: IncomingMessage, res: ServerResponse): Promise<void> {
+export async function requestHandler (req: IncomingMessage, res: ServerResponse): Promise<void> {
   logRequest(req);
 
   if (!req.url.startsWith(opts.basePath)) {
-    return redirectHandler(req, res, `${opts.basePath}${req.url.substr(1)}`);
+    return redirectHandler(res, `${opts.basePath}${req.url.substr(1)}`);
   }
 
   const url = req.url.substr(opts.basePath.length);
