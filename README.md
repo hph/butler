@@ -28,6 +28,7 @@ You may provide one or more options when running `butler`.
   pecifying a leading and trailing slash is optional but they will be added
   automatically. In addition, a redirect is set up in order to direct all
   requests that lack the base path to the correct URL.
+- `--force-tls` Only allow secure requests.
 
 ## Install
 
