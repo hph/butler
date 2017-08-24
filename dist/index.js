@@ -41,7 +41,8 @@ function main() {
     const port = yargs_1.argv.port || '8080';
     const directory = yargs_1.argv._.length ? yargs_1.argv._[0] : './';
     const basePath = normalizeBasePath(yargs_1.argv.basePath || '');
-    const options = { port, directory, basePath };
+    const forceTls = yargs_1.argv.forceTls ? true : false;
+    const options = { port, directory, basePath, forceTls };
     server_1.default(options, () => {
         console.log(chalk.white('Butler serving'), chalk.red('@'), chalk.white(`http://localhost:${port}${basePath}`));
     });

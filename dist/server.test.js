@@ -117,6 +117,7 @@ describe('server', () => {
             port: '8080',
             directory: './',
             basePath: '/',
+            forceTls: false,
         }, () => { });
         it('should return all immediate files and directories', () => __awaiter(this, void 0, void 0, function* () {
             const { directories, files } = yield server_1.listContents('./test/sample');
