@@ -47,7 +47,8 @@ export function main (): void {
   const port = argv.port || '8080';
   const directory = argv._.length ? argv._[0] : './';
   const basePath = normalizeBasePath(argv.basePath || '');
-  const options: ButlerOptions = { port, directory, basePath };
+  const forceTls = argv.forceTls ? true : false;
+  const options: ButlerOptions = { port, directory, basePath, forceTls };
 
   createButlerServer(options, () => {
     console.log(

@@ -29,6 +29,7 @@ export interface ButlerOptions {
   port: string;
   directory: string;
   basePath: string;
+  forceTls: boolean;
 }
 
 interface DirContents {
@@ -199,6 +200,21 @@ export async function requestHandler (req: IncomingMessage, res: ServerResponse)
 
   if (!req.url.startsWith(opts.basePath)) {
     return redirectHandler(res, `${opts.basePath}${req.url.substr(1)}`);
+  }
+
+  if (opts.forceTls) {
+    res.setHeader(
+      'Strict-Transport-Security',
+      'max-age=8640000; includeSubDomains',
+    );
+
+    if (!req.headers['x-forwarded-proto']) {
+      res.writeHead(302, {
+        Location: `https://${req.headers.host}${req.url}`,
+      });
+      res.end();
+      return;
+    }
   }
 
   const url = req.url.substr(opts.basePath.length);

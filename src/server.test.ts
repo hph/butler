@@ -145,6 +145,7 @@ describe('server', () => {
       port: '8080',
       directory: './',
       basePath: '/',
+      forceTls: false,
     }, () => {});
 
     it('should return all immediate files and directories', async () => {
