@@ -22,8 +22,6 @@ from that directory (as opposed to the current working directory).
 You may provide one or more options when running `butler`.
 
 - `--port` Specify the port from which to serve (default: 8080).
-- `--ngrok` Create a secure tunnel to the local server using ngrok. Please
-  note that the address is publicly accessible and may expose private files.
 - `--base-path` Specify the base URL from which to serve (default: `/`).
   pecifying a leading and trailing slash is optional but they will be added
   automatically. In addition, a redirect is set up in order to direct all

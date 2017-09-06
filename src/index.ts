@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 import { argv } from 'yargs';
-import { connect } from 'ngrok';
 
 import * as chalk from 'chalk';
 
@@ -19,9 +18,6 @@ Usage:
 Options:
 
   --port       Specify the port from which to serve (default: 8080).
-  --ngrok      Create a secure tunnel to the local server using ngrok.
-               Please note that the address is publicly accessible and
-               may expose private files.
   --base-path  Specify the base URL from which to serve (default: /).
                pecifying a leading and trailing slash is optional but
                they will be added automatically. In addition, a redirect
@@ -57,14 +53,4 @@ export function main (): void {
       chalk.white(`http://localhost:${port}${basePath}`),
     );
   });
-
-  if (argv.ngrok) {
-    connect(port, (err, address) => {
-      console.log(
-        chalk.white('Proxying'),
-        chalk.red('@'),
-        chalk.white(`${address}${basePath}`),
-      );
-    });
-  }
 }
